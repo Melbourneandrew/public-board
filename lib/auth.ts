@@ -2,7 +2,8 @@ import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypt
 
 export const COOKIE = '__Host-public_board';
 export const SESSION_SECONDS = 60 * 60 * 24 * 30;
-export const ACCOUNT_CHANNEL = 'private/accounts';
+export const PRIVATE_ACCOUNTS = 'private/accounts';
+export const ACCOUNT_CHANNEL = process.env.VERCEL_ENV === 'preview' ? PRIVATE_ACCOUNTS + '/preview' : PRIVATE_ACCOUNTS;
 
 export function username(value: unknown) {
   const name = typeof value === 'string' ? value.toLowerCase().trim() : '';

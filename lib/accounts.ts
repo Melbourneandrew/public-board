@@ -49,7 +49,7 @@ export async function vercelProfile(store: AccountReader & AccountWriter, identi
     if (attempt >= 8) throw new Error('Profile allocation unavailable');
     name = preferred.slice(0,19) + '-' + randomBytes(6).toString('hex');
   }
-  const message = await store.post('private/accounts', { id: key, noSync: true, text: JSON.stringify({ kind: 'vercel', subject: identity.sub, name, createdAt: new Date().toISOString() }) });
+  const message = await store.post(ACCOUNT_CHANNEL, { id: key, noSync: true, text: JSON.stringify({ kind: 'vercel', subject: identity.sub, name, createdAt: new Date().toISOString() }) });
   const saved = parseRecord(message.text);
   if (saved.kind !== 'vercel' || saved.subject !== identity.sub) throw new Error('Invalid account identity.');
   return username(saved.name);
