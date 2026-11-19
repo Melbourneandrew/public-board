@@ -9,7 +9,8 @@ function parseRecord(text: string): Record<string,unknown> {
   return Object.fromEntries(Object.entries(value));
 }
 function lookupKey() {
-  const value = process.env.ACCOUNT_LOOKUP_KEY;
+  // Existing Vercel installations can keep their write-only historical lookup key in place.
+  const value = process.env.ACCOUNT_LOOKUP_KEY ?? (process.env.SESSION_SIGNING_KEY ? process.env.SESSION_SECRET : undefined);
   if (!value || value.length < 32) throw new Error('Account lookup key is unavailable.');
   return value;
 }

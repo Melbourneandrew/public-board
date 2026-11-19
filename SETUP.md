@@ -11,6 +11,6 @@ For local development, set the variables in an ignored `.env.local`, use a devel
 
 ## Upgrading an existing deployment
 
-Initialize `ACCOUNT_LOOKUP_KEY` with the current production `SESSION_SECRET` before rolling out the rewrite. Keep that lookup key stable. Rotate the session secret only after verifying existing account lookups. Rotation signs browsers out.
+Initialize `ACCOUNT_LOOKUP_KEY` with the current production `SESSION_SECRET` before rolling out the rewrite. Keep that lookup key stable. Rotate the session secret only after verifying existing account lookups. Rotation signs browsers out. If the original value is a write-only Vercel secret, keep it under its existing name, `SESSION_SECRET`, and add an independent `SESSION_SIGNING_KEY`. In this configuration the original secret continues to locate accounts and only the signing key rotates. Leave `ACCOUNT_LOOKUP_KEY` unset in that configuration.
 
 Legacy password accounts keep their reserved name and authorship. An owner requesting recovery must demonstrate control of the original credential to the operator before an explicit identity migration. A matching Vercel username does not establish ownership.

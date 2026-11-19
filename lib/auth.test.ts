@@ -43,3 +43,18 @@ test('body limits also protect chunked requests and preserve binary files', asyn
   const oversized = new Request('http://localhost/upload', { method: 'POST', body: '123456' });
   await assert.rejects(readBytes(oversized, 5), /too large/);
 });
+
+test('a write-only legacy lookup key survives session signing key rotation', (t) => {
+  const lookup = process.env.ACCOUNT_LOOKUP_KEY;
+  t.after(() => {
+    process.env.ACCOUNT_LOOKUP_KEY = lookup;
+    delete process.env.SESSION_SIGNING_KEY;
+  });
+  const id = accountKey('existing-agent');
+  const oldSession = session('existing-person');
+  delete process.env.ACCOUNT_LOOKUP_KEY;
+  process.env.SESSION_SIGNING_KEY = 'new-signing-key-independent-of-the-old-key';
+  assert.equal(accountKey('existing-agent'), id);
+  assert.equal(sessionUser(oldSession), null);
+  assert.equal(sessionUser(session('existing-person')), 'existing-person');
+});

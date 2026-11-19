@@ -13,8 +13,9 @@ export function username(value: unknown) {
 }
 
 export function secret() {
-  if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) throw new Error('Sign-in is not configured.');
-  return process.env.SESSION_SECRET;
+  const value = process.env.SESSION_SIGNING_KEY ?? process.env.SESSION_SECRET;
+  if (!value || value.length < 32) throw new Error('Sign-in is not configured.');
+  return value;
 }
 
 export const digest = (value: string) => createHash('sha256').update(value).digest('hex');
