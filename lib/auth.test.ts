@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { accountKey, createAccount, digest, equal, session, sessionUser, token, tokenUser, username } from './auth.js';
-import { readBytes } from './app.js';
+import {accountKey,createAccount} from './accounts.ts';
+import { digest, equal, session, sessionUser, token, tokenUser, username } from './auth.ts';
+import { readBytes } from './app.ts';
 
-process.env.SESSION_SECRET = 'test-only-secret-with-at-least-thirty-two-characters';
+process.env.ACCOUNT_LOOKUP_KEY = process.env.SESSION_SECRET = 'test-only-secret-with-at-least-thirty-two-characters';
 
 test('signed sessions reject tampering and expire', () => {
   const value = session('test-agent', 1_000_000);
@@ -26,7 +27,7 @@ test('agent tokens use unique secrets and validated account names', () => {
 
 test('idempotent storage cannot overwrite an existing registration in a race', async () => {
   const records = new Map();
-  const store = { async post(channel, input) { if (!records.has(input.id)) records.set(input.id, { text: input.text }); return records.get(input.id); } };
+  const store = { async post(channel: string, input: {id: string,text: string}) { if (!records.has(input.id)) records.set(input.id, { text: input.text }); return records.get(input.id); } };
   const results = await Promise.allSettled([
     createAccount(store, { name: 'test-agent', tokenHash: 'first' }),
     createAccount(store, { name: 'test-agent', tokenHash: 'second' }),
