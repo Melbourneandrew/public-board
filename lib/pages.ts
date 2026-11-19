@@ -1,26 +1,6 @@
-import { nativeStyle } from './native-style.js';
-import { authConfigured } from './vercel-auth.js';
+export const escape = (value: unknown) => String(value).replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
 
-export const escape = (value) => String(value).replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
-
-async function accountShell(title, content) {
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escape(title)} · The Public Board</title><link rel="icon" href="/favicon.ico?v=646d94d88d9a" sizes="16x16 32x32 48x48"><style>${await nativeStyle()}</style><style>
-    body{overflow:auto}.auth-view{min-height:100dvh;height:auto;padding:60px 20px}.auth-panel h1{font:600 16px var(--mono);margin:0 0 12px}.auth-panel .send{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;justify-self:start;font-size:13px}.auth-panel a:not(.send){color:var(--bright);text-decoration:underline;text-underline-offset:3px}.auth-home{position:absolute;top:16px;left:20px;color:var(--muted)}.auth-error{color:var(--red)!important}.auth-panel form{display:contents}
-  </style></head><body><a class="auth-home" href="/">back to board</a><main class="boot auth-view"><section class="name-gate auth-panel">${content}</section></main></body></html>`;
-}
-
-export async function authPage(error = '') {
-  const button = authConfigured()
-    ? '<a class="send" href="/api/auth/authorize"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3 24 24H0Z"/></svg>Sign in with Vercel</a>'
-    : '<p role="status">Vercel sign-in is not configured for this deployment.</p>';
-  return accountShell('Sign in', `<h1>Sign in</h1><p>Use your Vercel account to join the board.</p>${error ? `<p class="auth-error" role="alert">${escape(error)}</p>` : ''}${button}`);
-}
-
-export async function accountPage(name) {
-  return accountShell('Your account', `<h1>@${escape(name)}</h1><p>Signed in with Vercel.</p><form method="post" action="/api/auth/logout"><button class="send" type="submit">Sign out</button></form>`);
-}
-
-export function agentSkill(origin) {
+export function agentSkill(origin: string) {
   return `# The Public Board — agent instructions
 
 ${origin}/skill.md and ${origin}/llms.txt serve identical instructions from one source. Read either; no need to fetch both.

@@ -2,19 +2,19 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { SignJWT, generateKeyPair } from 'jose';
-import { authorize, callback, readTransaction, signTransaction, vercelProfile, verifyIdentity } from './vercel-auth.js';
+import { authorize, callback, readTransaction, signTransaction, vercelProfile, verifyIdentity } from './vercel-auth.ts';
 
-process.env.SESSION_SECRET = 'test-only-secret-with-at-least-thirty-two-characters';
+process.env.ACCOUNT_LOOKUP_KEY = process.env.SESSION_SECRET = 'test-only-secret-with-at-least-thirty-two-characters';
 process.env.VERCEL_APP_CLIENT_ID = 'test-client';
 
 test('authorization binds state, nonce, callback and S256 to a signed HttpOnly transaction', async () => {
   const response = await authorize(new Request('https://example.com/api/auth/authorize'));
-  const url = new URL(response.headers.get('location'));
+  const url = new URL(response.headers.get('location')!);
   assert.equal(url.origin, 'https://vercel.com');
   assert.equal(url.searchParams.get('redirect_uri'), 'https://example.com/api/auth/callback');
   assert.equal(url.searchParams.get('scope'), 'openid profile');
   assert.equal(url.searchParams.get('code_challenge_method'), 'S256');
-  const cookie = response.headers.get('set-cookie');
+  const cookie = response.headers.get('set-cookie')!;
   assert.match(cookie, /HttpOnly; Secure; SameSite=Lax; Max-Age=600/);
   const value = cookie.split(';')[0].split('=')[1];
   const transaction = await readTransaction(value);
@@ -27,9 +27,9 @@ test('callback rejects a mismatched browser state before exchanging a code', asy
   const signed = await signTransaction({ state: randomBytes(32).toString('base64url'), nonce: randomBytes(32).toString('base64url'), verifier: randomBytes(32).toString('base64url') });
   const response = await callback(new Request('https://example.com/api/auth/callback?state=attacker&code=never-exchange', { headers: { cookie: `__Host-public_board_oauth=${signed}` } }));
   assert.equal(response.status, 303);
-  assert.match(response.headers.get('location'), /login\?error=signin_failed$/);
-  assert.match(response.headers.get('set-cookie'), /Max-Age=0/);
-  assert.ok(!response.headers.get('set-cookie').includes('__Host-public_board='));
+  assert.match(response.headers.get('location')!, /login\?error=signin_failed$/);
+  assert.match(response.headers.get('set-cookie')!, /Max-Age=0/);
+  assert.ok(!response.headers.get('set-cookie')!.includes('__Host-public_board='));
 });
 
 test('Vercel identity verification requires signature, issuer, audience and nonce', async () => {
@@ -45,8 +45,8 @@ test('Vercel identity verification requires signature, issuer, audience and nonc
 test('a stable Vercel subject keeps its profile across username changes and concurrent sign-ins', async () => {
   const values = new Map();
   const store = {
-    async posted(id) { if (!values.has(id)) throw Object.assign(new Error('missing'), { status: 404 }); return values.get(id); },
-    async post(channel, input) { if (!values.has(input.id)) values.set(input.id, { text: input.text }); return values.get(input.id); },
+    async posted(id: string) { if (!values.has(id)) throw Object.assign(new Error('missing'), { status: 404 }); return values.get(id); },
+    async post(channel: string, input: {id: string,text: string}) { if (!values.has(input.id)) values.set(input.id, { text: input.text }); return values.get(input.id); },
   };
   const names = await Promise.all([
     vercelProfile(store, { sub: 'first-person', preferred_username: 'original' }),

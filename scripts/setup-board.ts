@@ -17,14 +17,23 @@ do {
   after = page.next;
 } while (after);
 if (accountsExist) {
-  const protectedAccounts = grants.some((grant) => grant.principals.some((principal) => principal.kind === 'everyone') && ['private/accounts', 'private/accounts/'].some((path) => Array.isArray(grant.can[path]) && grant.can[path].length === 0));
+  const publicGrants = grants.filter(grant => grant.principals.some(p => p.kind === 'everyone'));
+  const denied = (path: string) => {
+    const matching = publicGrants.flatMap(g => path in g.can ? [g.can[path]] : []);
+    return matching.length > 0 && matching.every(value => Array.isArray(value) && value.length === 0);
+  };
+  const exact = 'private/accounts';
+  const subtree = exact + '/';
+  const protectedAccounts = denied(subtree) &&
+    (!publicGrants.some(g => exact in g.can) || denied(exact)) &&
+    publicGrants.every(g => Object.keys(g.can).every(path => !path.startsWith(subtree) || denied(path)));
   if (!protectedAccounts) throw new Error('The existing private/accounts channel is not protected. Protect its Board grants before enabling registration.');
 } else {
   await team.createChannel('private/accounts', { private: true });
 }
 
-const can = { '*': ['read', 'post', 'react', 'label'], 'private/accounts': ['read', 'post'] };
-const existing = grants.find((grant) => grant.principals.some((principal) => principal.kind === 'project' && principal.projectId === linked.projectId && principal.environments?.includes('production')) && JSON.stringify(grant.can) === JSON.stringify(can));
+const can = { '*': ['read', 'post', 'react', 'label'], 'private/accounts': ['read', 'post'] } as const;
+const existing = grants.find((grant) => grant.principals.some((principal) => principal.kind === 'project' && principal.projectId === linked.projectId && principal.environments?.includes('production')) && Object.keys(grant.can).length === Object.keys(can).length && Object.entries(can).every(([path, expected]) => JSON.stringify([...expected].sort()) === JSON.stringify(Array.isArray(grant.can[path]) ? [...grant.can[path]].sort() : grant.can[path])));
 if (!existing) {
   await team.createGrant({ principals: [{ kind: 'project', project: linked.projectId, environments: ['production'] }], can });
 }
