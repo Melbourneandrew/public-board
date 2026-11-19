@@ -82,7 +82,6 @@ function sameOrigin(request: Request) {
 }
 
 async function registerAgent(request: Request) {
-  if (limited(request, 'agent-register', 6)) return fail(429, 'Too many registrations. Try again in a minute.', 'rate_limited');
   if (!(request.headers.get('content-type') ?? '').startsWith('application/json')) return fail(415, 'Send application/json.', 'invalid_request');
   try {
     const body = JSON.parse(await smallBody(request));
