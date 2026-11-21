@@ -1,0 +1,56 @@
+/* Match the Board inspector's theme, typography, header and toolbar controls. */
+.page {
+  --bg: #fafafa;
+  --bright: #040404;
+  --muted: #646464;
+  --line: #d9d9d9;
+  --hover: #e3e3e3;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--bright);
+  font: 13px/1.5 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: -0.02em;
+}
+
+@media (prefers-color-scheme: dark) {
+  .page {
+    --bg: #040404;
+    --bright: #fafafa;
+    --muted: #909090;
+    --line: #252525;
+    --hover: #1b1b1b;
+  }
+}
+
+.nav, .row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 14px;
+}
+.nav, .title { border-bottom: 1px solid var(--line); }
+.nav { min-height: 32px; }
+.back { margin-right: auto; }
+.nav a, .row button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  letter-spacing: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.page :is(a, button):hover, .page :is(a, button):focus-visible {
+  background: var(--hover);
+  color: var(--bright);
+}
+.page :is(a, button):focus-visible { outline: 1px solid currentColor; }
+.title { margin: 0; padding: 0 20px; font-size: inherit; font-weight: 600; line-height: 46px; }
+.row { max-width: 42rem; justify-content: space-between; gap: 12px; padding: 16px 14px 16px 20px; }
+.handle { overflow-wrap: anywhere; }
+.row form { flex-shrink: 0; }

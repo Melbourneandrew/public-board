@@ -9,7 +9,7 @@
     "start": "next start",
     "test": "node --experimental-test-module-mocks --test lib/*.test.ts",
     "setup:board": "node scripts/setup-board.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
     "@vercel/board": "0.52.0",
